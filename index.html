@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Biblia Pro + Bază Date</title>
+    <title>Biblia Pro + Bază Date Live</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -25,7 +25,7 @@
         .verse-num { color: var(--p); font-weight: 800; font-size: 0.7rem; margin-right: 4px; background: #eee; padding: 1px 3px; border-radius: 3px; }
         .highlight { background: #fff3cd; border-radius: 4px; }
         .quiz-btn { padding: 12px !important; font-size: 0.9rem !important; margin-bottom: 8px; border-radius: 12px !important; width: 100%; transition: 0.3s; border-width: 2px !important; font-weight: bold !important; }
-        #q-txt { font-family: 'Montserrat', sans-serif; font-weight: 700; color: #2c3e50; min-height: 50px; }
+        #q-txt { font-family: 'Montserrat', sans-serif; font-weight: 700; color: #2c3e50; min-height: 50px; text-align: center; }
         .ref-hint { font-size: 0.85rem; color: #555; font-style: italic; margin-top: 5px; display: block; }
         .btn-home-float { position: fixed; bottom: 15px; right: 15px; background: var(--p); color: white; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; z-index: 1000; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
     </style>
@@ -41,7 +41,7 @@
         <ul class="nav nav-pills" id="pills-tab" role="tablist">
             <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#daily">ASTĂZI</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#read" onclick="initRead()">CITIRE</button></li>
-            <li class="nav-item"><button class="nav-link" id="tab-quiz" data-bs-toggle="pill" data-bs-target="#quiz">QUIZ</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#quiz">QUIZ</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#progress" onclick="updateProgressUI()">PROGRES</button></li>
         </ul>
     </div>
@@ -63,22 +63,22 @@
                     <select id="sel-v" class="form-select form-select-sm" onchange="goToV()"></select>
                 </div>
             </div>
-            <div id="citire-text">Selectează...</div>
+            <div id="citire-text">Selectează o carte...</div>
             <button id="btn-finish-cap" class="btn btn-outline-success w-100 mt-3 rounded-4 fw-bold" onclick="toggleChapterRead()">Am citit acest capitol</button>
         </div>
 
         <div class="tab-pane fade" id="quiz">
             <div id="quiz-login" class="card-premium text-center">
                 <h6 class="fw-bold mb-3">Cine participă la Quiz?</h6>
-                <input type="text" id="user-name" class="form-control mb-3 shadow-sm" placeholder="Scrie numele tău...">
+                <input type="text" id="user-name" class="form-control mb-3 shadow-sm text-center" placeholder="Numele tău...">
                 <button onclick="startQuizFlow()" class="btn btn-primary w-100 rounded-pill fw-bold">ÎNCEPE JOCUL</button>
             </div>
             <div id="quiz-box" class="card-premium d-none">
-                <div class="d-flex justify-content-between mb-2 small text-muted">
+                <div class="d-flex justify-content-between mb-2 small text-muted fw-bold">
                     <span id="player-display"></span>
                     <span id="score-display">Scor: 0</span>
                 </div>
-                <div id="q-txt" class="p-2 text-center mb-3"></div>
+                <div id="q-txt" class="p-2 mb-3"></div>
                 <div id="q-opts" class="d-grid"></div>
                 <div id="q-res" class="text-center fw-bold mt-2" style="min-height: 50px;"></div>
             </div>
@@ -86,7 +86,7 @@
 
         <div class="tab-pane fade" id="progress">
             <div class="card-premium text-center">
-                <h6 class="fw-bold" style="color: var(--p);">PROGRES TOTAL</h6>
+                <h6 class="fw-bold" style="color: var(--p);">PROGRES CITIRE</h6>
                 <div class="progress mb-2" style="height: 20px; border-radius: 10px;">
                     <div id="total-bar" class="progress-bar bg-success" style="width: 0%">0%</div>
                 </div>
@@ -101,7 +101,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // --- DATABASE ÎNTREBĂRI ---
+    // --- DATELE QUIZ-ULUI ---
     const intrebariBiblice = [
         { q: "Cine l-a trădat pe Isus pentru 30 de arginți?", a: ["Iuda Iscarioteanul", "Petru", "Ioan", "Toma"], c: 0, r: "Matei 26:14-16" },
         { q: "Unde S-a născut Isus Hristos?", a: ["Ierusalim", "Nazaret", "Betleem", "Ierihon"], c: 2, r: "Matei 2:1" },
@@ -111,11 +111,11 @@
         { q: "Cine l-a ucis pe uriașul Goliat?", a: ["Saul", "David", "Samson", "Ghedeon"], c: 1, r: "1 Samuel 17:50" }
     ];
 
-    // --- CONFIGURARE GOOGLE FORMS ---
-    const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeH799K0VvU7R_vM7B1pE7E9f6974955776/formResponse";
-    const ENTRY_NAME = "entry.1742442435";
-    const ENTRY_QUESTION = "entry.680693521";
-    const ENTRY_RESULT = "entry.1465228519";
+    // --- CONFIGURARE GOOGLE FORMS (ACTUALIZATĂ) ---
+    const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScEpP7q5TUR5AvRd1pdk5nzj9AnPpdGRcCa8qiaz4pLAfxp-Q/formResponse";
+    const ENTRY_NAME = "entry.672017369";
+    const ENTRY_QUESTION = "entry.1708892707";
+    const ENTRY_RESULT = "entry.484252119";
 
     let userName = "";
     let score = 0;
@@ -134,7 +134,7 @@
 
     function startQuizFlow() {
         const input = document.getElementById('user-name');
-        if(input.value.trim().length < 2) { alert("Introdu un nume!"); return; }
+        if(input.value.trim().length < 2) { alert("Te rugăm să introduci un nume!"); return; }
         userName = input.value;
         document.getElementById('quiz-login').classList.add('d-none');
         document.getElementById('quiz-box').classList.remove('d-none');
@@ -147,7 +147,11 @@
         formData.append(ENTRY_NAME, userName);
         formData.append(ENTRY_QUESTION, intrebare);
         formData.append(ENTRY_RESULT, rezultat);
-        fetch(GOOGLE_FORM_URL, { method: "POST", mode: "no-cors", body: formData });
+        fetch(GOOGLE_FORM_URL, { 
+            method: "POST", 
+            mode: "no-cors", 
+            body: formData 
+        }).catch(err => console.log("Eroare trimitere date"));
     }
 
     function startQuiz() {
@@ -168,15 +172,15 @@
             b.onclick = () => {
                 if(quizBlocat) return;
                 quizBlocat = true;
-                let status = "";
+                let statusR = "";
                 if(index === indexCorect) {
                     score++;
-                    status = "Corect";
+                    statusR = "Corect";
                     b.classList.replace('btn-outline-primary', 'btn-success');
                     b.classList.remove('bg-white');
                     document.getElementById('q-res').innerHTML = `<div class="text-success">CORECT! ✅</div><span class="ref-hint">Vezi: ${intr.r}</span>`;
                 } else {
-                    status = "Gresit";
+                    statusR = "Gresit";
                     b.classList.replace('btn-outline-primary', 'btn-danger');
                     b.classList.remove('bg-white');
                     document.getElementById('q-res').innerHTML = `<div class="text-danger">ERA: ${raspunsCorect} ❌</div><span class="ref-hint">Ref: ${intr.r}</span>`;
@@ -185,14 +189,14 @@
                     });
                 }
                 document.getElementById('score-display').innerText = "Scor: " + score;
-                trimiteDate(intr.q, status);
+                trimiteDate(intr.q, statusR);
                 setTimeout(startQuiz, 3500);
             };
             od.appendChild(b);
         });
     }
 
-    // --- LOGICA CITIRE & PROGRES (Păstrată) ---
+    // --- LOGICA CITIRE ---
     function initRead() {
         const sc = document.getElementById('sel-c');
         if (sc.options.length > 0) return;
@@ -205,7 +209,7 @@
         const caps = [...new Set(bibleData.verses.filter(v => v.book_name === c).map(v => v.chapter))];
         const sc = document.getElementById('sel-cap');
         sc.innerHTML = "";
-        caps.forEach(cp => sc.add(new Option("C." + cp, cp)));
+        caps.forEach(cp => sc.add(new Option("Cap. " + cp, cp)));
         showCap();
     }
     function showCap() {
@@ -214,7 +218,7 @@
         const vers = bibleData.verses.filter(v => v.book_name === c && v.chapter == cp);
         document.getElementById('citire-text').innerHTML = vers.map(v => `<span id="v-${v.verse}"><span class="verse-num">${v.verse}</span>${v.text} </span>`).join('');
         const sv = document.getElementById('sel-v');
-        sv.innerHTML = '<option value="0">V.</option>';
+        sv.innerHTML = '<option value="0">Vers.</option>';
         vers.forEach(v => sv.add(new Option(v.verse, v.verse)));
         updateCheckButton(c, cp);
     }
@@ -237,7 +241,7 @@
         const btn = document.getElementById('btn-finish-cap');
         const key = `${c}|${cp}`;
         if (readChapters[key]) {
-            btn.className = "btn btn-success w-100 mt-3 rounded-4 fw-bold";
+            btn.className = "btn btn-success w-100 mt-3 rounded-4 fw-bold shadow-sm";
             btn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Capitol citit!';
         } else {
             btn.className = "btn btn-outline-success w-100 mt-3 rounded-4 fw-bold";
