@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Biblia Pro - Quiz & Database</title>
+    <title>Biblia Pro - Quiz & Studiu</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,23 +13,25 @@
 
     <style>
         :root { --p: #1a2a6c; --a: #b21f1f; --s: #28a745; }
-        body, html { background: #f4f7f6; margin: 0; padding: 0; font-family: 'Lora', serif; }
-        header { background: white; padding: 12px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        body, html { background: #f4f7f6; margin: 0; padding: 0; font-family: 'Lora', serif; overflow-x: hidden; }
+        header { background: white; padding: 12px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
         .nav-custom { background: white; border-radius: 50px; padding: 3px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin: 15px auto; }
-        .nav-link { border-radius: 50px !important; font-weight: bold; color: #666; padding: 7px 15px !important; font-size: 0.8rem; }
+        .nav-link { border-radius: 50px !important; font-weight: bold; color: #666; padding: 7px 15px !important; font-size: 0.8rem; border: none !important; }
         .nav-link.active { background: var(--p) !important; color: white !important; }
-        .card-premium { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .card-premium { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 15px; border: none; }
         .quiz-btn { padding: 12px !important; margin-bottom: 10px; border-radius: 12px !important; width: 100%; transition: 0.2s; border: 2px solid #eee; font-weight: bold !important; background: white; text-align: left; }
         #q-txt { font-family: 'Montserrat', sans-serif; font-weight: 700; color: #2c3e50; min-height: 60px; text-align: center; font-size: 1.1rem; }
-        .ref-hint { font-size: 0.95rem; color: #d32f2f; font-style: italic; margin-top: 10px; display: block; font-weight: bold; text-align: center; background: #fff5f5; padding: 8px; border-radius: 10px; border: 1px dashed #d32f2f; }
         .score-box { background: #e8f5e9; color: #2e7d32; padding: 5px 15px; border-radius: 20px; font-weight: bold; }
-        #citire-text { line-height: 1.8; max-height: 60vh; overflow-y: auto; }
+        #citire-text { line-height: 1.8; max-height: 65vh; overflow-y: auto; text-align: justify; }
+        .ref-hint { font-size: 0.85rem; color: var(--a); font-weight: bold; display: block; margin-top: 5px; }
     </style>
 </head>
 <body>
 
 <header>
-    <h6 style="color: var(--p); font-family: 'Montserrat'; margin: 0; font-weight: 800;">BIBLIA <span style="color: var(--a);">PRO</span></h6>
+    <h6 style="color: var(--p); font-family: 'Montserrat'; margin: 0; font-weight: 800; letter-spacing: 1px;">
+        BIBLIA <span style="color: var(--a);">PRO</span>
+    </h6>
 </header>
 
 <div class="container py-2 text-center">
@@ -44,58 +46,54 @@
     <div class="tab-content text-start">
         <div class="tab-pane fade show active" id="daily">
             <div class="card-premium text-center">
-                <p id="rand-text" style="font-size: 1.25rem; color: #333;">Se încarcă Biblia...</p>
+                <i class="fas fa-quote-left mb-3" style="color: #ddd; font-size: 2rem;"></i>
+                <p id="rand-text" style="font-size: 1.2rem; color: #333; font-style: italic;">Se încarcă...</p>
                 <h6 id="rand-ref" class="fw-bold mt-2" style="color: var(--p);"></h6>
                 <button onclick="genereazaVerset()" class="btn btn-sm btn-primary rounded-pill mt-3 px-4 shadow-sm">ALT VERSET</button>
             </div>
         </div>
 
         <div class="tab-pane fade" id="read">
-            <div class="card-premium p-2 mb-2 sticky-top" style="background: #f4f7f6; top: 10px;">
+            <div class="card-premium p-2 mb-2 sticky-top" style="top: 60px; background: #f4f7f6; z-index: 5;">
                 <div class="d-flex gap-1">
                     <select id="sel-c" class="form-select form-select-sm" onchange="updateCap()"></select>
                     <select id="sel-cap" class="form-select form-select-sm" onchange="showCap()"></select>
                 </div>
             </div>
-            <div id="citire-text" class="card-premium">Selectează o carte...</div>
+            <div id="citire-text" class="card-premium">Selectează o carte pentru a începe lectura.</div>
         </div>
 
         <div class="tab-pane fade" id="quiz">
             <div id="quiz-login" class="card-premium text-center">
-                <h6 class="fw-bold mb-3">Introdu numele tău pentru a salva scorul</h6>
-                <input type="text" id="user-name" class="form-control mb-3 shadow-sm text-center" placeholder="Ex: Andrei">
-                <button onclick="startQuizFlow()" class="btn btn-primary w-100 rounded-pill fw-bold">ÎNCEPE JOCUL</button>
+                <h5 class="fw-bold mb-3">Provocarea Biblică</h5>
+                <p class="text-muted small">Introdu numele pentru a salva progresul în baza de date.</p>
+                <input type="text" id="user-name" class="form-control mb-3 text-center rounded-pill" placeholder="Numele tău">
+                <button onclick="startQuizFlow()" class="btn btn-primary w-100 rounded-pill fw-bold py-2 mb-2">START QUIZ (30 Întrebări)</button>
+                <button onclick="setNumeSiVezi()" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">VEZI DOAR ISTORICUL MEU</button>
             </div>
 
             <div id="quiz-box" class="card-premium d-none">
                 <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                    <span id="player-display" class="fw-bold text-primary"></span>
-                    <span id="q-count" class="badge bg-secondary text-white">Pas: 1/30</span>
-                    <span id="score-display" class="score-box">Scor: 0</span>
+                    <span id="player-display" class="fw-bold text-primary small"></span>
+                    <span id="score-display" class="score-box small">Scor: 0</span>
                 </div>
                 
                 <div id="quiz-content"> 
                     <div id="q-txt"></div>
                     <div id="q-opts" class="mt-3"></div>
-                    <div id="q-res" class="mt-3" style="min-height: 80px;"></div>
+                    <div id="q-res" class="mt-3" style="min-height: 50px;"></div>
+                    <hr>
+                    <button onclick="veziRezultate()" class="btn btn-light btn-sm w-100 text-muted">Verifică baza de date acum</button>
                 </div>
 
-                <div id="quiz-finish" class="d-none text-center py-4">
-                    <h3 class="fw-bold text-success">Test Finalizat! 🎉</h3>
-                    <p class="fs-5">Felicitări, ai parcurs cele 30 de întrebări.</p>
-                    <button onclick="veziRezultate()" class="btn btn-outline-primary rounded-pill w-100 mb-3 py-2">
-                        <i class="fas fa-list-ol me-2"></i>VEZI REZULTATELE MELE
-                    </button>
-                    <button onclick="location.reload()" class="btn btn-link btn-sm text-muted">Restart Quiz</button>
-                    
-                    <div id="tabel-rezultate" class="mt-4 text-start d-none" style="max-height: 350px; overflow-y: auto;">
-                        <table class="table table-sm table-hover border">
-                            <thead class="table-light sticky-top">
-                                <tr><th>Întrebare</th><th>Status</th></tr>
-                            </thead>
+                <div id="tabel-rezultate" class="mt-4 d-none">
+                    <h6 class="fw-bold border-bottom pb-2"><i class="fas fa-history me-2"></i>Istoric Răspunsuri</h6>
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-sm hover">
                             <tbody id="lista-scoruri-body"></tbody>
                         </table>
                     </div>
+                    <button onclick="location.reload()" class="btn btn-link btn-sm w-100 mt-2">Restart Joc</button>
                 </div>
             </div>
         </div>
@@ -103,6 +101,195 @@
 </div>
 
 <script>
+    // CONFIGURARE SUPABASE
+    const SUPABASE_BASE_URL = "https://tlfvklpexmglgkhuxyxp.supabase.co/rest/v1"; 
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRsZnZrbHBleG1nbGdraHV4eXhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjIxMjgsImV4cCI6MjA4NzQzODEyOH0.Vj7b_VsE9jCU5j3vW7EaOb2MGeWL8cbYPkkI3kuPeMY";
+
+    // VARIABILE JOC
+    let userName = "";
+    let score = 0;
+    let quizBlocat = false;
+    let intrebariSession = [];
+    let pasActual = 0;
+
+    // 1. FUNCȚII VERSETUL ZILEI
+    function genereazaVerset() {
+        if (typeof bibleData !== 'undefined') {
+            const v = bibleData.verses[Math.floor(Math.random() * bibleData.verses.length)];
+            document.getElementById('rand-text').innerText = v.text;
+            document.getElementById('rand-ref').innerText = v.book_name + " " + v.chapter + ":" + v.verse;
+        }
+    }
+    window.onload = genereazaVerset;
+
+    // 2. LOGICĂ QUIZ & LOGIN
+    function startQuizFlow() {
+        const input = document.getElementById('user-name');
+        if(input.value.trim().length < 2) { alert("Introdu un nume valid!"); return; }
+        userName = input.value.trim();
+        intrebariSession = [...intrebariBiblice].sort(() => 0.5 - Math.random());
+        document.getElementById('quiz-login').classList.add('d-none');
+        document.getElementById('quiz-box').classList.remove('d-none');
+        document.getElementById('player-display').innerText = "👤 " + userName;
+        startQuiz();
+    }
+
+    function setNumeSiVezi() {
+        const input = document.getElementById('user-name');
+        if(input.value.trim().length < 2) { alert("Introdu numele pentru căutare!"); return; }
+        userName = input.value.trim();
+        document.getElementById('quiz-login').classList.add('d-none');
+        document.getElementById('quiz-box').classList.remove('d-none');
+        document.getElementById('quiz-content').classList.add('d-none');
+        veziRezultate();
+    }
+
+    // 3. SALVARE ÎN SUPABASE
+    async function trimiteDate(intrebare, rezultat) {
+        try {
+            await fetch(`${SUPABASE_BASE_URL}/scoruri`, {
+                method: "POST",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`,
+                    "Content-Type": "application/json",
+                    "Prefer": "return=minimal"
+                },
+                body: JSON.stringify({ nume: userName, intrebare: intrebare, rezultat: rezultat })
+            });
+        } catch (e) { console.error("Eroare salvare:", e); }
+    }
+
+    // 4. MECANICĂ JOC
+    function startQuiz() {
+        if (pasActual >= 30) {
+            document.getElementById('q-txt').innerHTML = "<span class='text-success'>Felicitări! Ai terminat testul.</span>";
+            document.getElementById('q-opts').innerHTML = "";
+            veziRezultate();
+            return;
+        }
+        quizBlocat = false;
+        const intr = intrebariSession[pasActual];
+        pasActual++;
+        
+        document.getElementById('q-txt').innerText = pasActual + ". " + intr.q;
+        document.getElementById('q-res').innerText = "";
+        const od = document.getElementById('q-opts');
+        od.innerHTML = "";
+        
+        intr.a.forEach((raspuns, index) => {
+            let b = document.createElement('button');
+            b.className = "quiz-btn shadow-sm";
+            b.innerText = raspuns;
+            b.onclick = () => {
+                if(quizBlocat) return;
+                quizBlocat = true;
+                let esteCorect = (index === intr.c);
+                let statusR = esteCorect ? "Corect" : "Gresit";
+                
+                if(esteCorect) {
+                    score++;
+                    b.style.background = "#d4edda";
+                    b.style.borderColor = "#28a745";
+                } else {
+                    b.style.background = "#f8d7da";
+                    b.style.borderColor = "#dc3545";
+                    document.getElementById('q-res').innerHTML = `<small class='text-danger'>Răspuns corect: ${intr.a[intr.c]}</small>`;
+                }
+                
+                document.getElementById('score-display').innerText = "Scor: " + score;
+                trimiteDate(intr.q, statusR);
+                setTimeout(startQuiz, 2000);
+            };
+            od.appendChild(b);
+        });
+    }
+
+    // 5. AFIȘARE REZULTATE DIN SUPABASE (CU RĂSPUNS CORECT)
+    async function veziRezultate() {
+        const tabelContainer = document.getElementById('tabel-rezultate');
+        const listaBody = document.getElementById('lista-scoruri-body');
+        tabelContainer.classList.remove('d-none');
+        listaBody.innerHTML = "<tr><td colspan='2' class='text-center p-4'><div class='spinner-border spinner-border-sm text-primary'></div> Se accesează baza de date...</td></tr>";
+
+        try {
+            const url = `${SUPABASE_BASE_URL}/scoruri?nume=eq.${encodeURIComponent(userName)}`;
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`,
+                    "Accept": "application/json"
+                }
+            });
+
+            if (!response.ok) throw new Error("Eroare " + response.status);
+
+            const date = await response.json();
+            if (date.length === 0) {
+                listaBody.innerHTML = "<tr><td colspan='2' class='text-center p-3'>Niciun rezultat găsit.</td></tr>";
+                return;
+            }
+
+            // Sortăm: cele mai noi (ID mai mare) primele
+            date.sort((a, b) => b.id - a.id);
+
+            listaBody.innerHTML = "";
+            date.forEach(rand => {
+                const esteCorect = (rand.rezultat === "Corect");
+                const badgeClass = esteCorect ? "bg-success" : "bg-danger";
+                
+                // Găsim răspunsul corect în lista noastră locală folosind textul întrebării
+                const intrebareOriginala = intrebariBiblice.find(i => i.q === rand.intrebare);
+                let textCorect = "";
+                if (!esteCorect && intrebareOriginala) {
+                    textCorect = `<div class="ref-hint">Răspunsul corect era: ${intrebareOriginala.a[intrebareOriginala.c]}</div>`;
+                } else if (esteCorect && intrebareOriginala) {
+                    textCorect = `<div class="small text-success" style="font-size:0.7rem;">${intrebareOriginala.r}</div>`;
+                }
+
+                listaBody.innerHTML += `
+                    <tr class="border-bottom">
+                        <td style="padding: 10px 0;">
+                            <div style="font-size: 0.85rem; font-weight: 600; line-height: 1.2;">${rand.intrebare}</div>
+                            ${textCorect}
+                        </td>
+                        <td class="text-end" style="vertical-align: middle;">
+                            <span class="badge ${badgeClass}" style="font-size: 0.65rem;">${rand.rezultat}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (e) {
+            listaBody.innerHTML = `<tr><td colspan='2' class='text-danger p-3'>Eroare conexiune: ${e.message}</td></tr>`;
+        }
+    }
+
+    // 6. CITIRE BIBLIE (Cornilescu)
+    function initRead() {
+        if (typeof bibleData === 'undefined') return;
+        const sc = document.getElementById('sel-c');
+        if (sc.options.length > 0) return;
+        [...new Set(bibleData.verses.map(v => v.book_name))].forEach(c => sc.add(new Option(c, c)));
+        updateCap();
+    }
+    function updateCap() {
+        const c = document.getElementById('sel-c').value;
+        const caps = [...new Set(bibleData.verses.filter(v => v.book_name === c).map(v => v.chapter))];
+        const sc = document.getElementById('sel-cap');
+        sc.innerHTML = "";
+        caps.forEach(cp => sc.add(new Option("Capitolul " + cp, cp)));
+        showCap();
+    }
+    function showCap() {
+        const c = document.getElementById('sel-c').value;
+        const cp = document.getElementById('sel-cap').value;
+        const vers = bibleData.verses.filter(v => v.book_name === c && v.chapter == cp);
+        document.getElementById('citire-text').innerHTML = vers.map(v => `<span><b style="color:var(--a); font-size:0.8rem;">${v.verse}</b> ${v.text} </span>`).join(' ');
+        document.getElementById('citire-text').scrollTop = 0;
+    }
+
+    // 7. BAZA DE DATE ÎNTREBĂRI
     const intrebariBiblice = [
         { q: "Cine l-a trădat pe Isus pentru 30 de arginți?", a: ["Iuda Iscarioteanul", "Petru", "Ioan", "Toma"], c: 0, r: "Matei 26:14-16" },
         { q: "Unde S-a născut Isus Hristos?", a: ["Ierusalim", "Nazaret", "Betleem", "Ierihon"], c: 2, r: "Matei 2:1" },
@@ -125,8 +312,8 @@
         { q: "Cine l-a botezat pe Isus?", a: ["Petru", "Ioan Botezătorul", "Pavel", "Iacov"], c: 1, r: "Matei 3:13" },
         { q: "Care este ultima carte a Bibliei?", a: ["Evrei", "Iuda", "Apocalipsa", "Maleahi"], c: 2, r: "Apocalipsa 1:1" },
         { q: "Cine a fost fratele lui Moise?", a: ["Iosua", "Aaron", "Caleb", "Eleazar"], c: 1, r: "Exod 4:14" },
-        { q: "Câte pâini și câți pești a folosit Isus pentru a hrăni 5000 de oameni?", a: ["7 pâini/2 pești", "5 pâini/2 pești", "12 pâini/5 pești", "3 pâini/1 pește"], c: 1, r: "Matei 14:17" },
-        { q: "Cine a scris cele mai multe epistole în Noul Testament?", a: ["Petru", "Ioan", "Pavel", "Luca"], c: 2, r: "Fapte" },
+        { q: "Câte pâini a folosit Isus pentru a hrăni 5000 de oameni?", a: ["7 pâini", "5 pâini", "12 pâini", "3 pâini"], c: 1, r: "Matei 14:17" },
+        { q: "Cine a scris cele mai multe epistole în Noul Testament?", a: ["Petru", "Ioan", "Pavel", "Luca"], c: 2, r: "Noul Testament" },
         { q: "Ce animal a vorbit cu Balaam?", a: ["Un leu", "Un măgar", "Un șarpe", "Un miel"], c: 1, r: "Numeri 22:28" },
         { q: "Cine a fost vândut de frații săi în Egipt?", a: ["Benjamin", "Iosif", "Reuben", "Simeon"], c: 1, r: "Geneza 37:28" },
         { q: "Cât timp a stat Iona în pântecele peștelui?", a: ["1 zi", "7 zile", "3 zile și 3 nopți", "40 de zile"], c: 2, r: "Iona 1:17" },
@@ -135,154 +322,8 @@
         { q: "Cine a fost primul martir creștin?", a: ["Ștefan", "Iacov", "Filip", "Pavel"], c: 0, r: "Fapte 7:59" },
         { q: "Ce râu a fost folosit pentru botezul lui Isus?", a: ["Nil", "Eufrat", "Iordan", "Tigru"], c: 2, r: "Matei 3:13" }
     ];
-
-    // ATENȚIE: URL-ul tău din poză se termină cu /rest/v1. Nu mai adăugăm manual rest/v1 în URL-ul de fetch.
-    const SUPABASE_BASE_URL = "https://tlfvklpexmglgkhuxyxp.supabase.co/rest/v1"; 
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRsZnZrbHBleG1nbGdraHV4eXhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjIxMjgsImV4cCI6MjA4NzQzODEyOH0.Vj7b_VsE9jCU5j3vW7EaOb2MGeWL8cbYPkkI3kuPeMY";
-
-    let userName = "";
-    let score = 0;
-    let quizBlocat = false;
-    let intrebariParcurse = 0;
-    let intrebariSession = [];
-
-    function genereazaVerset() {
-        if (typeof bibleData !== 'undefined') {
-            const v = bibleData.verses[Math.floor(Math.random() * bibleData.verses.length)];
-            document.getElementById('rand-text').innerText = v.text;
-            document.getElementById('rand-ref').innerText = v.book_name + " " + v.chapter + ":" + v.verse;
-        }
-    }
-    window.onload = genereazaVerset;
-
-    function startQuizFlow() {
-        const input = document.getElementById('user-name');
-        if(input.value.trim().length < 2) return;
-        userName = input.value.trim();
-        intrebariSession = [...intrebariBiblice].sort(() => 0.5 - Math.random());
-        document.getElementById('quiz-login').classList.add('d-none');
-        document.getElementById('quiz-box').classList.remove('d-none');
-        document.getElementById('player-display').innerText = "👤 " + userName;
-        startQuiz();
-    }
-
-    async function trimiteDate(intrebare, rezultat) {
-        try {
-            await fetch(`${SUPABASE_BASE_URL}/scoruri`, {
-                method: "POST",
-                headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": `Bearer ${SUPABASE_KEY}`,
-                    "Content-Type": "application/json",
-                    "Prefer": "return=minimal"
-                },
-                body: JSON.stringify({ nume: userName, intrebare: intrebare, rezultat: rezultat })
-            });
-        } catch (e) { console.error("Error saving:", e); }
-    }
-
-    function startQuiz() {
-        if (intrebariParcurse >= 30) {
-            document.getElementById('quiz-content').classList.add('d-none');
-            document.getElementById('quiz-finish').classList.remove('d-none');
-            return;
-        }
-
-        quizBlocat = false;
-        intrebariParcurse++;
-        document.getElementById('q-count').innerText = "Pas: " + intrebariParcurse + "/30";
-
-        const intr = intrebariSession[intrebariParcurse - 1];
-        document.getElementById('q-txt').innerText = intr.q;
-        document.getElementById('q-res').innerText = "";
-        const od = document.getElementById('q-opts');
-        od.innerHTML = "";
-        
-        intr.a.forEach((raspuns, index) => {
-            let b = document.createElement('button');
-            b.className = "quiz-btn shadow-sm";
-            b.innerText = raspuns;
-            b.onclick = () => {
-                if(quizBlocat) return;
-                quizBlocat = true;
-                
-                let statusR = (index === intr.c) ? "Corect" : "Gresit";
-                if(index === intr.c) {
-                    score++;
-                    b.style.background = "#d4edda";
-                    document.getElementById('q-res').innerHTML = `<div class="text-success fw-bold text-center">CORECT! ✅</div>`;
-                } else {
-                    b.style.background = "#f8d7da";
-                    document.getElementById('q-res').innerHTML = `<div class="text-danger fw-bold text-center">GRESIT! Era: ${intr.a[intr.c]} ❌</div><span class="ref-hint">${intr.r}</span>`;
-                }
-                
-                document.getElementById('score-display').innerText = "Scor: " + score;
-                trimiteDate(intr.q, statusR);
-                setTimeout(startQuiz, 2500);
-            };
-            od.appendChild(b);
-        });
-    }
-
-    async function veziRezultate() {
-        const tabelContainer = document.getElementById('tabel-rezultate');
-        const listaBody = document.getElementById('lista-scoruri-body');
-        tabelContainer.classList.remove('d-none');
-        listaBody.innerHTML = "<tr><td colspan='2' class='text-center'>Se încarcă istoricul...</td></tr>";
-
-        try {
-            // URL-ul curat conform documentației tale
-            const url = `${SUPABASE_BASE_URL}/scoruri?nume=eq.${encodeURIComponent(userName)}&order=created_at.desc&limit=30`;
-
-            const response = await fetch(url, {
-                method: "GET",
-                headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": `Bearer ${SUPABASE_KEY}`,
-                    "Accept": "application/json"
-                }
-            });
-
-            if (!response.ok) throw new Error("Server Status: " + response.status);
-
-            const date = await response.json();
-            if (date.length === 0) {
-                listaBody.innerHTML = "<tr><td colspan='2' class='text-center'>Niciun scor găsit. Joacă întâi!</td></tr>";
-                return;
-            }
-
-            listaBody.innerHTML = "";
-            date.forEach(rand => {
-                const badge = rand.rezultat === "Corect" ? "bg-success" : "bg-danger";
-                listaBody.innerHTML += `<tr><td>${rand.intrebare}</td><td><span class="badge ${badge}">${rand.rezultat}</span></td></tr>`;
-            });
-        } catch (e) {
-            listaBody.innerHTML = `<tr><td colspan='2' class='text-danger'>Eroare: ${e.message}</td></tr>`;
-        }
-    }
-
-    function initRead() {
-        if (typeof bibleData === 'undefined') return;
-        const sc = document.getElementById('sel-c');
-        if (sc.options.length > 0) return;
-        [...new Set(bibleData.verses.map(v => v.book_name))].forEach(c => sc.add(new Option(c, c)));
-        updateCap();
-    }
-    function updateCap() {
-        const c = document.getElementById('sel-c').value;
-        const caps = [...new Set(bibleData.verses.filter(v => v.book_name === c).map(v => v.chapter))];
-        const sc = document.getElementById('sel-cap');
-        sc.innerHTML = "";
-        caps.forEach(cp => sc.add(new Option("Capitolul " + cp, cp)));
-        showCap();
-    }
-    function showCap() {
-        const c = document.getElementById('sel-c').value;
-        const cp = document.getElementById('sel-cap').value;
-        const vers = bibleData.verses.filter(v => v.book_name === c && v.chapter == cp);
-        document.getElementById('citire-text').innerHTML = vers.map(v => `<span><b style="color:var(--a); font-size:0.8rem;">${v.verse}</b> ${v.text} </span>`).join(' ');
-    }
 </script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
