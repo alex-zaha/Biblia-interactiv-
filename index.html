@@ -16,13 +16,19 @@
         body, html { background: #f4f7f6; margin: 0; padding: 0; font-family: 'Lora', serif; overflow-x: hidden; }
         header { background: white; padding: 12px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
         .nav-custom { background: white; border-radius: 50px; padding: 3px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin: 15px auto; }
-        .nav-link { border-radius: 50px !important; font-weight: bold; color: #666; padding: 7px 15px !important; font-size: 0.8rem; border: none !important; }
+        .nav-link { border-radius: 50px !important; font-weight: bold; color: #666; padding: 7px 12px !important; font-size: 0.75rem; border: none !important; }
         .nav-link.active { background: var(--p) !important; color: white !important; }
         .card-premium { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 15px; border: none; }
         .quiz-btn { padding: 12px !important; margin-bottom: 10px; border-radius: 12px !important; width: 100%; transition: 0.2s; border: 2px solid #eee; font-weight: bold !important; background: white; text-align: left; }
         #q-txt { font-family: 'Montserrat', sans-serif; font-weight: 700; color: #2c3e50; min-height: 60px; text-align: center; font-size: 1.1rem; }
         .score-box { background: #e8f5e9; color: #2e7d32; padding: 5px 15px; border-radius: 20px; font-weight: bold; }
-        #citire-text { line-height: 1.8; max-height: 65vh; overflow-y: auto; text-align: justify; }
+        
+        #citire-text { line-height: 1.8; max-height: 65vh; overflow-y: auto; text-align: justify; scroll-behavior: smooth; }
+        .verset-wrapper { position: relative; cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: 0.3s; display: inline; }
+        .verset-wrapper.highlight { background-color: #fff3cd; border-bottom: 1px solid #ffeeba; }
+        .save-icon { color: #ccc; font-size: 0.8rem; margin-left: 5px; cursor: pointer; }
+        .save-icon:hover { color: var(--a); }
+        .saved-item { border-left: 4px solid var(--a); padding-left: 10px; margin-bottom: 15px; font-size: 0.9rem; position: relative; }
         .ref-hint { font-size: 0.85rem; color: var(--a); font-weight: bold; display: block; margin-top: 5px; }
     </style>
 </head>
@@ -39,6 +45,7 @@
         <ul class="nav nav-pills" id="pills-tab">
             <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#daily">ASTĂZI</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#read" onclick="initRead()">CITIRE</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#saved" onclick="afiseazaSalvate()">SALVATE</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#quiz">QUIZ</button></li>
         </ul>
     </div>
@@ -58,9 +65,19 @@
                 <div class="d-flex gap-1">
                     <select id="sel-c" class="form-select form-select-sm" onchange="updateCap()"></select>
                     <select id="sel-cap" class="form-select form-select-sm" onchange="showCap()"></select>
+                    <select id="sel-v" class="form-select form-select-sm" onchange="sariLaVerset()"></select>
                 </div>
             </div>
             <div id="citire-text" class="card-premium">Selectează o carte pentru a începe lectura.</div>
+        </div>
+
+        <div class="tab-pane fade" id="saved">
+            <div class="card-premium">
+                <h5 class="fw-bold mb-3" style="color: var(--p);"><i class="fas fa-bookmark me-2 text-danger"></i>Versete Salvate</h5>
+                <div id="lista-salvate">
+                    <p class="text-muted small">Nu ai salvat niciun verset încă. Apasă pe iconița de lângă versete în secțiunea Citire.</p>
+                </div>
+            </div>
         </div>
 
         <div class="tab-pane fade" id="quiz">
@@ -101,18 +118,12 @@
 </div>
 
 <script>
-    // CONFIGURARE SUPABASE
     const SUPABASE_BASE_URL = "https://tlfvklpexmglgkhuxyxp.supabase.co/rest/v1"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRsZnZrbHBleG1nbGdraHV4eXhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjIxMjgsImV4cCI6MjA4NzQzODEyOH0.Vj7b_VsE9jCU5j3vW7EaOb2MGeWL8cbYPkkI3kuPeMY";
 
-    // VARIABILE JOC
-    let userName = "";
-    let score = 0;
-    let quizBlocat = false;
-    let intrebariSession = [];
-    let pasActual = 0;
+    let userName = "", score = 0, quizBlocat = false, intrebariSession = [], pasActual = 0;
 
-    // 1. FUNCȚII VERSETUL ZILEI
+    // 1. VERSETUL ZILEI
     function genereazaVerset() {
         if (typeof bibleData !== 'undefined') {
             const v = bibleData.verses[Math.floor(Math.random() * bibleData.verses.length)];
@@ -120,9 +131,99 @@
             document.getElementById('rand-ref').innerText = v.book_name + " " + v.chapter + ":" + v.verse;
         }
     }
-    window.onload = genereazaVerset;
+    window.addEventListener('load', genereazaVerset);
 
-    // 2. LOGICĂ QUIZ & LOGIN
+    // 2. SALVARE VERSETE (LOCAL STORAGE)
+    function salveazaVerset(book, cap, vNum, text) {
+        let salvate = JSON.parse(localStorage.getItem('biblia_salvate') || '[]');
+        const ref = `${book} ${cap}:${vNum}`;
+        
+        if (!salvate.some(s => s.ref === ref)) {
+            salvate.push({ ref, text });
+            localStorage.setItem('biblia_salvate', JSON.stringify(salvate));
+            alert("Verset salvat!");
+        } else {
+            alert("Acest verset este deja salvat.");
+        }
+    }
+
+    function afiseazaSalvate() {
+        const container = document.getElementById('lista-salvate');
+        let salvate = JSON.parse(localStorage.getItem('biblia_salvate') || '[]');
+        
+        if (salvate.length === 0) {
+            container.innerHTML = '<p class="text-muted small">Nu ai salvat niciun verset încă.</p>';
+            return;
+        }
+
+        container.innerHTML = salvate.map((v, index) => `
+            <div class="saved-item">
+                <div class="fw-bold text-primary" style="font-size:0.8rem;">${v.ref}</div>
+                <div>${v.text}</div>
+                <button onclick="stergeVerset(${index})" class="btn btn-sm text-danger p-0 mt-1" style="font-size:0.7rem;">Șterge</button>
+            </div>
+        `).join('');
+    }
+
+    function stergeVerset(index) {
+        let salvate = JSON.parse(localStorage.getItem('biblia_salvate') || '[]');
+        salvate.splice(index, 1);
+        localStorage.setItem('biblia_salvate', JSON.stringify(salvate));
+        afiseazaSalvate();
+    }
+
+    // 3. CITIRE BIBLIE
+    function initRead() {
+        if (typeof bibleData === 'undefined') return;
+        const sc = document.getElementById('sel-c');
+        if (sc.options.length > 0) return;
+        [...new Set(bibleData.verses.map(v => v.book_name))].forEach(c => sc.add(new Option(c, c)));
+        updateCap();
+    }
+    
+    function updateCap() {
+        const c = document.getElementById('sel-c').value;
+        const caps = [...new Set(bibleData.verses.filter(v => v.book_name === c).map(v => v.chapter))];
+        const sc = document.getElementById('sel-cap');
+        sc.innerHTML = "";
+        caps.forEach(cp => sc.add(new Option("Cap. " + cp, cp)));
+        showCap();
+    }
+
+    function showCap() {
+        const c = document.getElementById('sel-c').value;
+        const cp = document.getElementById('sel-cap').value;
+        const vers = bibleData.verses.filter(v => v.book_name === c && v.chapter == cp);
+        
+        const sv = document.getElementById('sel-v');
+        sv.innerHTML = '<option value="">Verset...</option>';
+        vers.forEach(v => sv.add(new Option("V. " + v.verse, v.verse)));
+
+        document.getElementById('citire-text').innerHTML = vers.map(v => `
+            <span id="v-${v.verse}" class="verset-wrapper" onclick="evidentiazaVerset(this)">
+                <b style="color:var(--a); font-size:0.8rem;">${v.verse}</b> ${v.text}
+                <i class="fas fa-bookmark save-icon" onclick="salveazaVerset('${v.book_name}', ${v.chapter}, ${v.verse}, '${v.text.replace(/'/g, "\\'")}')"></i>
+            </span>
+        `).join(' ');
+        document.getElementById('citire-text').scrollTop = 0;
+    }
+
+    function evidentiazaVerset(el) {
+        document.querySelectorAll('.verset-wrapper').forEach(v => v.classList.remove('highlight'));
+        el.classList.add('highlight');
+    }
+
+    function sariLaVerset() {
+        const vNum = document.getElementById('sel-v').value;
+        if(!vNum) return;
+        const el = document.getElementById(`v-${vNum}`);
+        if(el) {
+            evidentiazaVerset(el);
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    // 4. QUIZ LOGIC (Neschimbat)
     function startQuizFlow() {
         const input = document.getElementById('user-name');
         if(input.value.trim().length < 2) { alert("Introdu un nume valid!"); return; }
@@ -144,26 +245,19 @@
         veziRezultate();
     }
 
-    // 3. SALVARE ÎN SUPABASE
     async function trimiteDate(intrebare, rezultat) {
         try {
             await fetch(`${SUPABASE_BASE_URL}/scoruri`, {
                 method: "POST",
-                headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": `Bearer ${SUPABASE_KEY}`,
-                    "Content-Type": "application/json",
-                    "Prefer": "return=minimal"
-                },
+                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", "Prefer": "return=minimal" },
                 body: JSON.stringify({ nume: userName, intrebare: intrebare, rezultat: rezultat })
             });
-        } catch (e) { console.error("Eroare salvare:", e); }
+        } catch (e) { console.error(e); }
     }
 
-    // 4. MECANICĂ JOC
     function startQuiz() {
         if (pasActual >= 30) {
-            document.getElementById('q-txt').innerHTML = "<span class='text-success'>Felicitări! Ai terminat testul.</span>";
+            document.getElementById('q-txt').innerHTML = "<span class='text-success'>Felicitări!</span>";
             document.getElementById('q-opts').innerHTML = "";
             veziRezultate();
             return;
@@ -171,12 +265,10 @@
         quizBlocat = false;
         const intr = intrebariSession[pasActual];
         pasActual++;
-        
         document.getElementById('q-txt').innerText = pasActual + ". " + intr.q;
         document.getElementById('q-res').innerText = "";
         const od = document.getElementById('q-opts');
         od.innerHTML = "";
-        
         intr.a.forEach((raspuns, index) => {
             let b = document.createElement('button');
             b.className = "quiz-btn shadow-sm";
@@ -185,111 +277,35 @@
                 if(quizBlocat) return;
                 quizBlocat = true;
                 let esteCorect = (index === intr.c);
-                let statusR = esteCorect ? "Corect" : "Gresit";
-                
-                if(esteCorect) {
-                    score++;
-                    b.style.background = "#d4edda";
-                    b.style.borderColor = "#28a745";
-                } else {
-                    b.style.background = "#f8d7da";
-                    b.style.borderColor = "#dc3545";
-                    document.getElementById('q-res').innerHTML = `<small class='text-danger'>Răspuns corect: ${intr.a[intr.c]}</small>`;
-                }
-                
+                if(esteCorect) { score++; b.style.background = "#d4edda"; } 
+                else { b.style.background = "#f8d7da"; document.getElementById('q-res').innerHTML = `<small class='text-danger'>Corect: ${intr.a[intr.c]}</small>`; }
                 document.getElementById('score-display').innerText = "Scor: " + score;
-                trimiteDate(intr.q, statusR);
+                trimiteDate(intr.q, esteCorect ? "Corect" : "Gresit");
                 setTimeout(startQuiz, 2000);
             };
             od.appendChild(b);
         });
     }
 
-    // 5. AFIȘARE REZULTATE DIN SUPABASE (CU RĂSPUNS CORECT)
     async function veziRezultate() {
         const tabelContainer = document.getElementById('tabel-rezultate');
         const listaBody = document.getElementById('lista-scoruri-body');
         tabelContainer.classList.remove('d-none');
-        listaBody.innerHTML = "<tr><td colspan='2' class='text-center p-4'><div class='spinner-border spinner-border-sm text-primary'></div> Se accesează baza de date...</td></tr>";
-
+        listaBody.innerHTML = "<tr><td colspan='2' class='text-center p-4'>Se încarcă...</td></tr>";
         try {
             const url = `${SUPABASE_BASE_URL}/scoruri?nume=eq.${encodeURIComponent(userName)}`;
-            const response = await fetch(url, {
-                method: "GET",
-                headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": `Bearer ${SUPABASE_KEY}`,
-                    "Accept": "application/json"
-                }
-            });
-
-            if (!response.ok) throw new Error("Eroare " + response.status);
-
+            const response = await fetch(url, { method: "GET", headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Accept": "application/json" } });
             const date = await response.json();
-            if (date.length === 0) {
-                listaBody.innerHTML = "<tr><td colspan='2' class='text-center p-3'>Niciun rezultat găsit.</td></tr>";
-                return;
-            }
-
-            // Sortăm: cele mai noi (ID mai mare) primele
             date.sort((a, b) => b.id - a.id);
-
             listaBody.innerHTML = "";
             date.forEach(rand => {
                 const esteCorect = (rand.rezultat === "Corect");
                 const badgeClass = esteCorect ? "bg-success" : "bg-danger";
-                
-                // Găsim răspunsul corect în lista noastră locală folosind textul întrebării
-                const intrebareOriginala = intrebariBiblice.find(i => i.q === rand.intrebare);
-                let textCorect = "";
-                if (!esteCorect && intrebareOriginala) {
-                    textCorect = `<div class="ref-hint">Răspunsul corect era: ${intrebareOriginala.a[intrebareOriginala.c]}</div>`;
-                } else if (esteCorect && intrebareOriginala) {
-                    textCorect = `<div class="small text-success" style="font-size:0.7rem;">${intrebareOriginala.r}</div>`;
-                }
-
-                listaBody.innerHTML += `
-                    <tr class="border-bottom">
-                        <td style="padding: 10px 0;">
-                            <div style="font-size: 0.85rem; font-weight: 600; line-height: 1.2;">${rand.intrebare}</div>
-                            ${textCorect}
-                        </td>
-                        <td class="text-end" style="vertical-align: middle;">
-                            <span class="badge ${badgeClass}" style="font-size: 0.65rem;">${rand.rezultat}</span>
-                        </td>
-                    </tr>
-                `;
+                listaBody.innerHTML += `<tr><td style="padding: 10px 0;"><div style="font-size: 0.85rem; font-weight: 600;">${rand.intrebare}</div></td><td class="text-end"><span class="badge ${badgeClass}">${rand.rezultat}</span></td></tr>`;
             });
-        } catch (e) {
-            listaBody.innerHTML = `<tr><td colspan='2' class='text-danger p-3'>Eroare conexiune: ${e.message}</td></tr>`;
-        }
+        } catch (e) { listaBody.innerHTML = "<tr><td>Eroare!</td></tr>"; }
     }
 
-    // 6. CITIRE BIBLIE (Cornilescu)
-    function initRead() {
-        if (typeof bibleData === 'undefined') return;
-        const sc = document.getElementById('sel-c');
-        if (sc.options.length > 0) return;
-        [...new Set(bibleData.verses.map(v => v.book_name))].forEach(c => sc.add(new Option(c, c)));
-        updateCap();
-    }
-    function updateCap() {
-        const c = document.getElementById('sel-c').value;
-        const caps = [...new Set(bibleData.verses.filter(v => v.book_name === c).map(v => v.chapter))];
-        const sc = document.getElementById('sel-cap');
-        sc.innerHTML = "";
-        caps.forEach(cp => sc.add(new Option("Capitolul " + cp, cp)));
-        showCap();
-    }
-    function showCap() {
-        const c = document.getElementById('sel-c').value;
-        const cp = document.getElementById('sel-cap').value;
-        const vers = bibleData.verses.filter(v => v.book_name === c && v.chapter == cp);
-        document.getElementById('citire-text').innerHTML = vers.map(v => `<span><b style="color:var(--a); font-size:0.8rem;">${v.verse}</b> ${v.text} </span>`).join(' ');
-        document.getElementById('citire-text').scrollTop = 0;
-    }
-
-    // 7. BAZA DE DATE ÎNTREBĂRI
     const intrebariBiblice = [
         { q: "Cine l-a trădat pe Isus pentru 30 de arginți?", a: ["Iuda Iscarioteanul", "Petru", "Ioan", "Toma"], c: 0, r: "Matei 26:14-16" },
         { q: "Unde S-a născut Isus Hristos?", a: ["Ierusalim", "Nazaret", "Betleem", "Ierihon"], c: 2, r: "Matei 2:1" },
