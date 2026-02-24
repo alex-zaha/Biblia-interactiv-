@@ -1,7 +1,8 @@
 {
   "name": "Biblia Pro",
   "short_name": "BibliaPro",
-  "start_url": "index.html",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#1a2a6c",
   "theme_color": "#1a2a6c",
@@ -10,7 +11,8 @@
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3389/3389381.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
