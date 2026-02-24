@@ -22,6 +22,25 @@
             background-color: #121212 !important;
         }
 
+        /* FIX VIZIBILITATE MOD NOCTURN */
+        body.dark-theme #lista-salvate .text-muted,
+        body.dark-theme .tab-pane#saved p.text-muted {
+            color: #b0b0b0 !important;
+        }
+
+        /* ASIGURARE CONTRAST BUTOANE QUIZ */
+        .quiz-btn[style*="background: rgb(212, 237, 218)"], 
+        .quiz-btn[style*="background: #d4edda"],
+        .quiz-btn[style*="background: #28a745"] {
+            color: white !important; 
+        }
+
+        .quiz-btn[style*="background: rgb(248, 215, 218)"],
+        .quiz-btn[style*="background: #f8d7da"],
+        .quiz-btn[style*="background: #dc3545"] {
+            color: white !important;
+        }
+
         body, html { background: var(--bg); margin: 0; padding: 0; font-family: 'Lora', serif; overflow-x: hidden; transition: 0.3s; color: var(--txt); min-height: 100vh; }
         
         /* STILURI ECRAN BUN VENIT */
@@ -75,7 +94,6 @@
 
         #main-app-content { opacity: 0; transition: 0.5s; }
 
-        /* RESTUL STILURILOR TALE */
         header { background: white; padding: 12px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; transition: 0.3s; }
         body.dark-theme header { background: #1e1e1e; border-bottom: 1px solid #333; }
         .nav-custom { background: white; border-radius: 50px; padding: 3px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin: 15px auto; transition: 0.3s; }
@@ -223,8 +241,8 @@
     let userName = "", score = 0, quizBlocat = false, intrebariSession = [], pasActual = 0;
     let currentFontSize = 16;
     let timerInterval, secundeScurse = 0;
+    let audioCtx = null;
 
-    // FUNCTIE NAVIGARE START
     function goToFeature(feature) {
         const welcome = document.getElementById('welcome-screen');
         welcome.style.transform = "translateY(-100%)";
@@ -243,77 +261,47 @@
         setTimeout(() => { welcome.style.display = "none"; }, 800);
     }
 
-            // Definim contextul audio o singură dată la nivel global
-    let audioCtx = null;
-
     function playFeedback(corect) {
         if (navigator.vibrate) navigator.vibrate(corect ? 50 : [100, 50, 100]);
-        
-        // Inițializăm contextul la primul click dacă nu există
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        
-        // Dacă contextul a fost suspendat de browser, îl reactivăm
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
 
         const osc = audioCtx.createOscillator();
         const g = audioCtx.createGain();
-        
         osc.connect(g);
         g.connect(audioCtx.destination);
-        
         osc.frequency.setValueAtTime(corect ? 880 : 220, audioCtx.currentTime);
-        
-        // Volumul: pornește clar și scade discret
         g.gain.setValueAtTime(0.15, audioCtx.currentTime); 
         g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
-        
         osc.start();
         osc.stop(audioCtx.currentTime + 0.4);
     }
 
-
     function playFanfare() {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        // O secvență de note mai clară (Do-Mi-Sol-Do)
         const notes = [523.25, 659.25, 783.99, 1046.50];
-        
         notes.forEach((freq, i) => {
             const osc = ctx.createOscillator();
             const g = ctx.createGain();
-            
             osc.frequency.value = freq;
             osc.connect(g);
             g.connect(ctx.destination);
-            
-            // Fiecare notă pornește cu o mică întârziere (i * 0.15)
             const startTime = ctx.currentTime + (i * 0.15);
-            
             g.gain.setValueAtTime(0, startTime);
-            g.gain.linearRampToValueAtTime(0.1, startTime + 0.1); // Volum clar
-            g.gain.exponentialRampToValueAtTime(0.001, startTime + 0.8); // Atenuare lungă
-            
+            g.gain.linearRampToValueAtTime(0.1, startTime + 0.1);
+            g.gain.exponentialRampToValueAtTime(0.001, startTime + 0.8);
             osc.start(startTime);
             osc.stop(startTime + 0.9);
         });
     }
 
-
     function restartQuiz() {
         document.getElementById('quiz-box').classList.add('d-none');
         document.getElementById('tabel-rezultate').classList.add('d-none');
-        pasActual = 0;
-        score = 0;
-        secundeScurse = 0;
+        pasActual = 0; score = 0; secundeScurse = 0;
         document.getElementById('quiz-difficulty').classList.remove('d-none');
     }
 
-    // --- PASTRAT TOATE FUNCTIILE TALE EXISTENTE DIN CODUL ANTERIOR ---
-    // (showDifficulty, startQuizFlow, startTimer, startQuiz, trimiteDate, veziRezultate, etc.)
-    
     function showDifficulty() {
         const input = document.getElementById('user-name');
         if(input.value.trim().length < 2) return;
@@ -371,8 +359,18 @@
                 quizBlocat = true;
                 let esteCorect = (index === intr.c);
                 playFeedback(esteCorect);
-                if(esteCorect) { score++; b.style.background = "#d4edda"; b.style.borderColor = "var(--s)"; }
-                else { b.style.background = "#f8d7da"; b.style.borderColor = "var(--a)"; }
+                
+                if(esteCorect) { 
+                    score++; 
+                    b.style.background = "#28a745"; 
+                    b.style.color = "white";        
+                    b.style.borderColor = "var(--s)"; 
+                } else { 
+                    b.style.background = "#dc3545"; 
+                    b.style.color = "white";        
+                    b.style.borderColor = "var(--a)"; 
+                }
+
                 document.getElementById('score-display').innerHTML = `<i class="fas fa-star me-1 text-warning"></i>Scor: ${score}`;
                 trimiteDate(intr.q, esteCorect ? "Corect" : "Gresit", intr.r, raspuns);
                 pasActual++; 
@@ -455,7 +453,7 @@
     function afiseazaSalvate() {
         const container = document.getElementById('lista-salvate');
         let s = JSON.parse(localStorage.getItem('biblia_salvate') || '[]');
-        if (s.length === 0) { container.innerHTML = '<p class="text-muted small">Niciun verset.</p>'; return; }
+        if (s.length === 0) { container.innerHTML = '<p class="text-muted small">Niciun verset salvat încă.</p>'; return; }
         container.innerHTML = s.map((v, i) => `
             <div class="card-premium mb-2 p-3 shadow-sm" style="border-left: 4px solid var(--a)">
                 <div class="ref-link mb-1" onclick="navigheazaLaRef('${v.ref}')">${v.ref}</div>
